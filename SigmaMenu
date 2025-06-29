@@ -1,0 +1,221 @@
+local TweenService = game:GetService("TweenService")
+local StarterGui = game:GetService("StarterGui")
+local player = game.Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+local postesFolder = workspace:WaitForChild("Postes")
+
+local tempoEspera = 1
+local tempoPressionar = 2
+local targetSize = Vector3.new(0.8908141851425171, 3.15348219871521, 1.7905367612838745)
+local valorPorPoste = 500
+
+local loopAtivo = false
+local ciclosCompletos = 0
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "AutoFarmUI"
+screenGui.Parent = playerGui
+screenGui.ResetOnSpawn = false
+
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 250, 0, 150)
+mainFrame.Position = UDim2.new(0, 20, 0, 100)
+mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+mainFrame.BorderSizePixel = 0
+mainFrame.Active = true
+mainFrame.Draggable = true
+mainFrame.Parent = screenGui
+
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(1, -30, 0, 30)
+titleLabel.Position = UDim2.new(0, 5, 0, 0)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Text = "🐶 RPBR auto farm 🐶"
+titleLabel.TextColor3 = Color3.new(0.160784, 0.513725, 0.000000)
+titleLabel.Font = Enum.Font.GothamBold
+titleLabel.TextSize = 16
+titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+titleLabel.Parent = mainFrame
+
+local minimizeButton = Instance.new("TextButton")
+minimizeButton.Size = UDim2.new(0, 25, 0, 25)
+minimizeButton.Position = UDim2.new(1, -30, 0, 2)
+minimizeButton.Text = "-"
+minimizeButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+minimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+minimizeButton.Font = Enum.Font.GothamBold
+minimizeButton.TextSize = 18
+minimizeButton.Parent = mainFrame
+
+local contentFrame = Instance.new("Frame")
+contentFrame.Size = UDim2.new(1, 0, 1, -30)
+contentFrame.Position = UDim2.new(0, 0, 0, 30)
+contentFrame.BackgroundTransparency = 1
+contentFrame.Parent = mainFrame
+
+local statusLabel = Instance.new("TextLabel")
+statusLabel.Size = UDim2.new(1, -20, 0, 20)
+statusLabel.Position = UDim2.new(0, 10, 0, 10)
+statusLabel.BackgroundTransparency = 1
+statusLabel.Text = "Status: Pressione para começar"
+statusLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+statusLabel.Font = Enum.Font.Gotham
+statusLabel.TextSize = 14
+statusLabel.TextXAlignment = Enum.TextXAlignment.Left
+statusLabel.Parent = contentFrame
+
+local startButton = Instance.new("TextButton")
+startButton.Size = UDim2.new(0.45, 0, 0, 30)
+startButton.Position = UDim2.new(0.05, 0, 0, 50)
+startButton.Text = "⬆️ Iniciar"
+startButton.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
+startButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+startButton.Font = Enum.Font.GothamBold
+startButton.TextSize = 14
+startButton.Parent = contentFrame
+
+local stopButton = Instance.new("TextButton")
+stopButton.Size = UDim2.new(0.45, 0, 0, 30)
+stopButton.Position = UDim2.new(0.5, 0, 0, 50)
+stopButton.Text = "⏹ Parar"
+stopButton.BackgroundColor3 = Color3.new(0.333333, 0.003922, 0.003922)
+stopButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+stopButton.Font = Enum.Font.GothamBold
+stopButton.TextSize = 14
+stopButton.Parent = contentFrame
+
+local function tamanhoSemelhante(a, b, margem)
+    margem = margem or 0.001
+    return math.abs(a.X - b.X) < margem and math.abs(a.Y - b.Y) < margem and math.abs(a.Z - b.Z) < margem
+end
+
+local function teleportarSuave(cframe, duracao)
+    local character = player.Character
+    if not character then return false end
+    local hrp = character:FindFirstChild("HumanoidRootPart")
+    if not hrp then return false end
+
+    local tweenInfo = TweenInfo.new(duracao or 0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+    local tween = TweenService:Create(hrp, tweenInfo, {CFrame = cframe})
+    tween:Play()
+    tween.Completed:Wait()
+    return true
+end
+
+local function teleportarSuaveParaParte(poste, duracao)
+    for _, part in ipairs(poste:GetDescendants()) do
+        if part:IsA("BasePart") and tamanhoSemelhante(part.Size, targetSize) then
+            local altura = part.Size.Y / 2
+            local destino = part.CFrame + Vector3.new(0, altura, 0)
+            return teleportarSuave(destino, duracao)
+        end
+    end
+    return false
+end
+
+local function notificar(titulo, texto, duracao)
+    StarterGui:SetCore("SendNotification", {
+        Title = titulo or "Notificação",
+        Text = texto or "",
+        Duration = duracao or 3,
+        Icon = "",
+    })
+end
+
+local function iniciarColeta()
+    local character = player.Character or player.CharacterAdded:Wait()
+    local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+    local posInicial = humanoidRootPart.CFrame
+    ciclosCompletos = 0
+
+    while loopAtivo do
+        ciclosCompletos = ciclosCompletos + 1
+        statusLabel.Text = "🟢 Status: Em andamento"
+
+        local postesValidos = {}
+        for _, poste in ipairs(postesFolder:GetChildren()) do
+            local estragado = poste:FindFirstChild("Estragado")
+            if estragado and estragado:IsA("BoolValue") and estragado.Value == true then
+                table.insert(postesValidos, poste)
+            end
+        end
+
+        if #postesValidos == 0 then
+            notificar("Importante ⚠️", "Nenhum poste disponível!!", 4)
+            break
+        end
+
+        local postesColetados = 0
+        for i, poste in ipairs(postesValidos) do
+            if not loopAtivo then break end
+
+            -- Teleporte rápido (0.2 seg)
+            if teleportarSuaveParaParte(poste, 0.2) then
+                task.wait(0.1) -- espera um pouco
+            end
+
+            -- Aciona todos os prompts que encontrar no poste
+            local promptAcionado = false
+            for _, desc in ipairs(poste:GetDescendants()) do
+                if desc:IsA("ProximityPrompt") then
+                    desc.KeyboardKeyCode = Enum.KeyCode.F
+                    desc.RequiresLineOfSight = false
+                    desc.MaxActivationDistance = math.huge
+                    desc.HoldDuration = tempoPressionar
+                    desc:InputHoldBegin()
+                    task.wait(tempoPressionar + 0.2)
+                    desc:InputHoldEnd()
+                    promptAcionado = true
+                    postesColetados = postesColetados + 1
+                    -- Se quiser apenas um prompt por poste, descomente a linha abaixo:
+                    -- break
+                end
+            end
+
+            task.wait(tempoEspera)
+        end
+
+        local dinheiroGanho = postesColetados * valorPorPoste
+        notificar(
+            "Ciclo do farm #" .. ciclosCompletos,
+            "💈 Postes coletados: " .. postesColetados .. "\n ⚠️Dinheiro ganho: R$" .. dinheiroGanho .. "\n 🗝️Ciclos totais: " .. ciclosCompletos,
+            6
+        )
+
+        teleportarSuave(posInicial, 0.5)
+        task.wait(2)
+    end
+
+    statusLabel.Text = "🔴 Status: Parado"
+    notificar("❌", "Finalizado", 3)
+
+    local characterFinal = player.Character
+    local hrpFinal = characterFinal and characterFinal:FindFirstChild("HumanoidRootPart")
+    if hrpFinal and hrpFinal.CFrame ~= posInicial then
+        teleportarSuave(posInicial, 0.5)
+    end
+end
+
+startButton.MouseButton1Click:Connect(function()
+    if not loopAtivo then
+        loopAtivo = true
+        statusLabel.Text = "🟢 Status: Em andamento"
+        notificar("☄️", "Começando", 3)
+        task.spawn(iniciarColeta)
+    end
+end)
+
+stopButton.MouseButton1Click:Connect(function()
+    loopAtivo = false
+    statusLabel.Text = "🔴 Status: Parado"
+    notificar("❌", "Pressione 'Iniciar' para outro ciclo", 3)
+end)
+
+local minimizado = false
+minimizeButton.MouseButton1Click:Connect(function()
+    minimizado = not minimizado
+    contentFrame.Visible = not minimizado
+    minimizeButton.Text = minimizado and "+" or "-"
+    mainFrame.Size = minimizado and UDim2.new(0, 250, 0, 30) or UDim2.new(0, 250, 0, 150)
+end)
+-- La faca saturnita 🪐
