@@ -194,6 +194,7 @@ function MenuRPBR()
 				for _, p in pairs(Players:GetPlayers()) do
 					if p ~= player then
 						Prender:FireServer(p)
+						task.wait()
 					end
 				end
 			end
