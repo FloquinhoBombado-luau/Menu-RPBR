@@ -24,12 +24,11 @@ function MenuRPBR()
 	mainFrame.Draggable = true
 	mainFrame.Parent = screenGui
 
-		local titleLabel = Instance.new("TextLabel")
+	local titleLabel = Instance.new("TextLabel")
 	titleLabel.Size = UDim2.new(1, -30, 0, 30)
 	titleLabel.Position = UDim2.new(0, 5, 0, 0)
 	titleLabel.BackgroundTransparency = 1
 	titleLabel.Text = "🐶 Menu RPBR 🐶"
-	titleLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
 	titleLabel.Font = Enum.Font.GothamBold
 	titleLabel.TextSize = 16
 	titleLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -41,7 +40,6 @@ function MenuRPBR()
 		hue = (hue + 0.005) % 1
 		titleLabel.TextColor3 = Color3.fromHSV(hue, 1, 1)
 	end)
-
 
 	local minimizeButton = Instance.new("TextButton")
 	minimizeButton.Size = UDim2.new(0, 25, 0, 25)
@@ -117,7 +115,7 @@ function MenuRPBR()
 	local startButton = Instance.new("TextButton")
 	startButton.Size = UDim2.new(0.45, 0, 0, 30)
 	startButton.Position = UDim2.new(0.05, 0, 0, 50)
-	startButton.Text = "☄️ Iniciar"
+	startButton.Text = "☁️ Iniciar"
 	startButton.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
 	startButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 	startButton.Font = Enum.Font.GothamBold
@@ -157,144 +155,59 @@ function MenuRPBR()
 	inputBox.TextSize = 14
 	inputBox.Parent = prisonPage
 
-	local btnPrenderUm = Instance.new("TextButton")
-	btnPrenderUm.Size = UDim2.new(0.9, 0, 0, 30)
-	btnPrenderUm.Position = UDim2.new(0.05, 0, 0, 90)
-	btnPrenderUm.Text = "Prender player selecionado"
-	btnPrenderUm.BackgroundColor3 = Color3.new(1.000000, 0.650980, 0.000000)
-	btnPrenderUm.TextColor3 = Color3.fromRGB(255, 255, 255)
-	btnPrenderUm.Font = Enum.Font.GothamBold
-	btnPrenderUm.TextSize = 14
-	btnPrenderUm.Parent = prisonPage
+	local suggestionFrame = Instance.new("Frame")
+	suggestionFrame.Size = UDim2.new(0.9, 0, 0, 60)
+	suggestionFrame.Position = UDim2.new(0.05, 0, 0, 85)
+	suggestionFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+	suggestionFrame.Visible = false
+	suggestionFrame.ClipsDescendants = true
+	suggestionFrame.Parent = prisonPage
 
-	local btnPrenderTodos = Instance.new("TextButton")
-	btnPrenderTodos.Size = UDim2.new(0.9, 0, 0, 30)
-	btnPrenderTodos.Position = UDim2.new(0.05, 0, 0, 130)
-	btnPrenderTodos.Text = "Prender all (Ultra troll ☠️)"
-	btnPrenderTodos.BackgroundColor3 = Color3.new(1.000000, 0.000000, 0.000000)
-	btnPrenderTodos.TextColor3 = Color3.fromRGB(255, 255, 255)
-	btnPrenderTodos.Font = Enum.Font.GothamBold
-	btnPrenderTodos.TextSize = 14
-	btnPrenderTodos.Parent = prisonPage
-
-	local Prender1 = game:GetService("ReplicatedStorage"):FindFirstChild("Prisao")
-
-	local function prenderJogadorNome(nome)
-		if Prender1 then
-			local Prender = Prender1:FindFirstChild("Prender")
-			if Prender and Prender:IsA("RemoteEvent") then
-				local Players = game:GetService("Players")
-				local alvo = Players:FindFirstChild(nome)
-				if alvo then
-					Prender:FireServer(alvo)
-				else
-					warn("Jogador não encontrado: "..nome)
-				end
+	local function limparSugestoes()
+		for _, c in pairs(suggestionFrame:GetChildren()) do
+			if c:IsA("TextButton") then
+				c:Destroy()
 			end
 		end
 	end
 
-	local function prenderTodos()
-		if Prender1 then
-			local Prender = Prender1:FindFirstChild("Prender")
-			if Prender and Prender:IsA("RemoteEvent") then
-				local Players = game:GetService("Players")
-				for _, p in pairs(Players:GetPlayers()) do
-					if p ~= player then
-						Prender:FireServer(p)
-						task.wait()
-					end
-				end
+	local function atualizarSugestoes(texto)
+		limparSugestoes()
+		if texto == "" then
+			suggestionFrame.Visible = false
+			return
+		end
+		local Players = game:GetService("Players")
+		local encontrados = 0
+		for _, p in pairs(Players:GetPlayers()) do
+			if p.Name:lower():sub(1, #texto) == texto:lower() then
+				encontrados += 1
+				local btn = Instance.new("TextButton")
+				btn.Size = UDim2.new(1, 0, 0, 20)
+				btn.Position = UDim2.new(0, 0, 0, (encontrados - 1) * 20)
+				btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+				btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+				btn.Font = Enum.Font.Gotham
+				btn.TextSize = 14
+				btn.Text = p.Name
+				btn.Parent = suggestionFrame
+				btn.MouseButton1Click:Connect(function()
+					inputBox.Text = p.Name
+					suggestionFrame.Visible = false
+				end)
 			end
 		end
+		suggestionFrame.Visible = encontrados > 0
 	end
 
-	btnPrenderUm.MouseButton1Click:Connect(function()
-		local nomeAlvo = inputBox.Text
-		if nomeAlvo and nomeAlvo ~= "" then
-			prenderJogadorNome(nomeAlvo)
-		end
+	inputBox:GetPropertyChangedSignal("Text"):Connect(function()
+		atualizarSugestoes(inputBox.Text)
 	end)
 
-	btnPrenderTodos.MouseButton1Click:Connect(function()
-		prenderTodos()
-	end)
-
-	local function tamanhoSemelhante(a, b, margem)
-		margem = margem or 0.001
-		return math.abs(a.X - b.X) < margem and math.abs(a.Y - b.Y) < margem and math.abs(a.Z - b.Z) < margem
-	end
-
-	local function teleportarParaParteComSize(poste)
-		for _, part in ipairs(poste:GetDescendants()) do
-			if part:IsA("BasePart") and tamanhoSemelhante(part.Size, targetSize) then
-				local altura = part.Size.Y / 2
-				humanoidRootPart.CFrame = part.CFrame + Vector3.new(0, altura, 0)
-				return true
-			end
-		end
-		return false
-	end
-
-	local function acionarPrompt(poste)
-		for _, desc in ipairs(poste:GetDescendants()) do
-			if desc:IsA("ProximityPrompt") then
-				desc.KeyboardKeyCode = Enum.KeyCode.F
-				desc.RequiresLineOfSight = false
-				desc.MaxActivationDistance = math.huge
-				desc.HoldDuration = tempoPressionar
-				desc:InputHoldBegin()
-				task.wait(tempoPressionar + 0.2)
-				desc:InputHoldEnd()
-				return true
-			end
-		end
-		return false
-	end
-
-	local function iniciarColeta()
-		while loopAtivo do
-			statusLabel.Text = "🟡 Status: Procurando"
-			local postesValidos = {}
-			for _, poste in ipairs(postesFolder:GetChildren()) do
-				local estragado = poste:FindFirstChild("Estragado")
-				if estragado and estragado:IsA("BoolValue") and estragado.Value == true then
-					table.insert(postesValidos, poste)
-				end
-			end
-			for _, poste in ipairs(postesValidos) do
-				if not loopAtivo then break end
-				statusLabel.Text = "🟢 Status: Pegando"
-				if teleportarParaParteComSize(poste) then
-					task.wait(tempoEspera)
-					acionarPrompt(poste)
-					task.wait(tempoEspera)
-				end
-			end
-			statusLabel.Text = "🔴 Status: Finalizando aguarde!"
-			task.wait(2)
-		end
-		statusLabel.Text = "🔴 Status: Parado"
-	end
-
-	startButton.MouseButton1Click:Connect(function()
-		if not loopAtivo then
-			loopAtivo = true
-			statusLabel.Text = "🟢 Status: Iniciando "
-			task.spawn(iniciarColeta)
-		end
-	end)
-
-	stopButton.MouseButton1Click:Connect(function()
-		loopAtivo = false
-		statusLabel.Text = "🟡 Status do script: Parando..."
-	end)
-
-	local minimizado = false
-	minimizeButton.MouseButton1Click:Connect(function()
-		minimizado = not minimizado
-		mainFrame.Visible = not minimizado
+	inputBox.FocusLost:Connect(function()
+		task.wait(0.1)
+		suggestionFrame.Visible = false
 	end)
 end
+
 MenuRPBR()
--- Versão 2.1
