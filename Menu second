@@ -1,0 +1,12 @@
+local Prender1 = game:GetService("ReplicatedStorage"):FindFirstChild("Prisao")
+local Player = game:GetService("Players").LocalPlayer
+local function ultimoSigma()
+if Prender1 then
+    local Prender = Prender1:FindFirstChild("Prender")
+    
+    if Prender and Prender:IsA("RemoteEvent") then
+        Prender:FireServer(Player)
+    end
+end
+end
+ultimoSigma()
