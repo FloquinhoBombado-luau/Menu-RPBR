@@ -1,6 +1,20 @@
-function MenuRPBR()
-	local player = game.Players.LocalPlayer
-	local playerGui = player:WaitForChild("PlayerGui")
+local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local workspace = game:GetService("Workspace")
+
+local menuGui 
+
+local function MenuRPBR()
+	if menuGui then
+		menuGui.Enabled = true
+		return
+	end
+
 	local character = player.Character or player.CharacterAdded:Wait()
 	local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
 
@@ -10,10 +24,10 @@ function MenuRPBR()
 	local targetSize = Vector3.new(0.8908141851425171, 3.15348219871521, 1.7905367612838745)
 	local loopAtivo = false
 
-	local screenGui = Instance.new("ScreenGui")
-	screenGui.Name = "AutoFarmUI"
-	screenGui.Parent = playerGui
-	screenGui.ResetOnSpawn = false
+	menuGui = Instance.new("ScreenGui")
+	menuGui.Name = "AutoFarmUI"
+	menuGui.ResetOnSpawn = false
+	menuGui.Parent = playerGui
 
 	local mainFrame = Instance.new("Frame")
 	mainFrame.Size = UDim2.new(0, 260, 0, 250)
@@ -22,10 +36,10 @@ function MenuRPBR()
 	mainFrame.BorderSizePixel = 0
 	mainFrame.Active = true
 	mainFrame.Draggable = true
-	mainFrame.Parent = screenGui
+	mainFrame.Parent = menuGui
 
 	local titleLabel = Instance.new("TextLabel")
-	titleLabel.Size = UDim2.new(1, -30, 0, 30)
+	titleLabel.Size = UDim2.new(1, -60, 0, 30)
 	titleLabel.Position = UDim2.new(0, 5, 0, 0)
 	titleLabel.BackgroundTransparency = 1
 	titleLabel.Text = "🐶 Menu RPBR 🐶"
@@ -35,22 +49,25 @@ function MenuRPBR()
 	titleLabel.TextXAlignment = Enum.TextXAlignment.Left
 	titleLabel.Parent = mainFrame
 
-	local RunService = game:GetService("RunService")
 	local hue = 0
 	RunService.RenderStepped:Connect(function()
 		hue = (hue + 0.005) % 1
 		titleLabel.TextColor3 = Color3.fromHSV(hue, 1, 1)
 	end)
 
-	local minimizeButton = Instance.new("TextButton")
-	minimizeButton.Size = UDim2.new(0, 25, 0, 25)
-	minimizeButton.Position = UDim2.new(1, -30, 0, 2)
-	minimizeButton.Text = "-"
-	minimizeButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-	minimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-	minimizeButton.Font = Enum.Font.GothamBold
-	minimizeButton.TextSize = 18
-	minimizeButton.Parent = mainFrame
+	local closeButton = Instance.new("TextButton")
+	closeButton.Size = UDim2.new(0, 25, 0, 25)
+	closeButton.Position = UDim2.new(1, -30, 0, 2)
+	closeButton.Text = "🐕"
+	closeButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+	closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+	closeButton.Font = Enum.Font.GothamBold
+	closeButton.TextSize = 14
+	closeButton.Parent = mainFrame
+
+	closeButton.MouseButton1Click:Connect(function()
+		menuGui.Enabled = false
+	end)
 
 	local navFrame = Instance.new("Frame")
 	navFrame.Size = UDim2.new(1, 0, 0, 30)
@@ -75,7 +92,7 @@ function MenuRPBR()
 	local btnFarm = Instance.new("TextButton")
 	btnFarm.Size = UDim2.new(0.5, 0, 1, 0)
 	btnFarm.Position = UDim2.new(0, 0, 0, 0)
-	btnFarm.Text = "Auto farm "
+	btnFarm.Text = "Auto farm"
 	btnFarm.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 	btnFarm.TextColor3 = Color3.fromRGB(255, 255, 255)
 	btnFarm.Font = Enum.Font.GothamBold
@@ -95,12 +112,149 @@ function MenuRPBR()
 	btnFarm.MouseButton1Click:Connect(function()
 		farmPage.Visible = true
 		prisonPage.Visible = false
+		TweenService:Create(mainFrame, TweenInfo.new(0.25), {
+			Size = UDim2.new(0, 260, 0, 250)
+		}):Play()
 	end)
 
 	btnPrison.MouseButton1Click:Connect(function()
 		farmPage.Visible = false
 		prisonPage.Visible = true
+		TweenService:Create(mainFrame, TweenInfo.new(0.25), {
+			Size = UDim2.new(0, 260, 0, 400)
+		}):Play()
 	end)
+
+	
+
+	local prisonLabel = Instance.new("TextLabel")
+	prisonLabel.Size = UDim2.new(1, -20, 0, 20)
+	prisonLabel.Position = UDim2.new(0, 10, 0, 10)
+	prisonLabel.BackgroundTransparency = 1
+	prisonLabel.Text = "Modo Prisão"
+	prisonLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+	prisonLabel.Font = Enum.Font.GothamBold
+	prisonLabel.TextSize = 16
+	prisonLabel.TextXAlignment = Enum.TextXAlignment.Left
+	prisonLabel.Parent = prisonPage
+
+	local inputBox = Instance.new("TextBox")
+	inputBox.Size = UDim2.new(0.9, 0, 0, 30)
+	inputBox.Position = UDim2.new(0.05, 0, 0, 50)
+	inputBox.PlaceholderText = "Escreva o NICKNAME para prender"
+	inputBox.ClearTextOnFocus = false
+	inputBox.Text = ""
+	inputBox.TextColor3 = Color3.fromRGB(0, 0, 0)
+	inputBox.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	inputBox.Font = Enum.Font.Gotham
+	inputBox.TextSize = 14
+	inputBox.Parent = prisonPage
+
+	local autocompleteFrame = Instance.new("Frame")
+	autocompleteFrame.Size = UDim2.new(0.9, 0, 0, 100)
+	autocompleteFrame.Position = UDim2.new(0.05, 0, 0, 85)
+	autocompleteFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+	autocompleteFrame.BorderSizePixel = 0
+	autocompleteFrame.Visible = false
+	autocompleteFrame.ClipsDescendants = true
+	autocompleteFrame.Parent = prisonPage
+
+	local function updateAutocomplete()
+		autocompleteFrame:ClearAllChildren()
+		local text = inputBox.Text:lower()
+		if text == "" then
+			autocompleteFrame.Visible = false
+			return
+		end
+		local count = 0
+		for _, p in pairs(Players:GetPlayers()) do
+			if p.Name:lower():find(text) then
+				if count >= 5 then break end -- máximo 5 sugestões
+				count = count + 1
+
+				local btn = Instance.new("TextButton")
+				btn.Size = UDim2.new(1, 0, 0, 20)
+				btn.Position = UDim2.new(0, 0, 0, 20 * (count - 1))
+				btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+				btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+				btn.Font = Enum.Font.GothamBold
+				btn.TextSize = 14
+				btn.Text = p.Name
+				btn.Parent = autocompleteFrame
+
+				btn.MouseButton1Click:Connect(function()
+					inputBox.Text = p.Name
+					autocompleteFrame.Visible = false
+				end)
+			end
+		end
+		autocompleteFrame.Visible = count > 0
+	end
+
+	inputBox:GetPropertyChangedSignal("Text"):Connect(updateAutocomplete)
+
+	local btnPrenderUm = Instance.new("TextButton")
+	btnPrenderUm.Size = UDim2.new(0.9, 0, 0, 30)
+	btnPrenderUm.Position = UDim2.new(0.05, 0, 0, 190)
+	btnPrenderUm.Text = "Prender player selecionado"
+	btnPrenderUm.BackgroundColor3 = Color3.new(1, 0.65, 0)
+	btnPrenderUm.TextColor3 = Color3.fromRGB(255, 255, 255)
+	btnPrenderUm.Font = Enum.Font.GothamBold
+	btnPrenderUm.TextSize = 14
+	btnPrenderUm.Parent = prisonPage
+
+	local btnPrenderTodos = Instance.new("TextButton")
+	btnPrenderTodos.Size = UDim2.new(0.9, 0, 0, 30)
+	btnPrenderTodos.Position = UDim2.new(0.05, 0, 0, 230)
+	btnPrenderTodos.Text = "Prender all (Ultra troll ☠️)"
+	btnPrenderTodos.BackgroundColor3 = Color3.new(1, 0, 0)
+	btnPrenderTodos.TextColor3 = Color3.fromRGB(255, 255, 255)
+	btnPrenderTodos.Font = Enum.Font.GothamBold
+	btnPrenderTodos.TextSize = 14
+	btnPrenderTodos.Parent = prisonPage
+
+	local Prender1 = ReplicatedStorage:FindFirstChild("Prisao")
+
+	local function prenderJogadorNome(nome)
+		if Prender1 then
+			local Prender = Prender1:FindFirstChild("Prender")
+			if Prender and Prender:IsA("RemoteEvent") then
+				local alvo = Players:FindFirstChild(nome)
+				if alvo then
+					Prender:FireServer(alvo)
+				else
+					warn("Jogador não encontrado: " .. nome)
+				end
+			end
+		end
+	end
+
+	local function prenderTodos()
+		if Prender1 then
+			local Prender = Prender1:FindFirstChild("Prender")
+			if Prender and Prender:IsA("RemoteEvent") then
+				for _, p in pairs(Players:GetPlayers()) do
+					if p ~= player then
+						Prender:FireServer(p)
+						task.wait()
+					end
+				end
+			end
+		end
+	end
+
+	btnPrenderUm.MouseButton1Click:Connect(function()
+		local nomeAlvo = inputBox.Text
+		if nomeAlvo and nomeAlvo ~= "" then
+			prenderJogadorNome(nomeAlvo)
+		end
+	end)
+
+	btnPrenderTodos.MouseButton1Click:Connect(function()
+		prenderTodos()
+	end)
+
+
 
 	local statusLabel = Instance.new("TextLabel")
 	statusLabel.Size = UDim2.new(1, -20, 0, 20)
@@ -132,92 +286,6 @@ function MenuRPBR()
 	stopButton.Font = Enum.Font.GothamBold
 	stopButton.TextSize = 14
 	stopButton.Parent = farmPage
-
-	local prisonLabel = Instance.new("TextLabel")
-	prisonLabel.Size = UDim2.new(1, -20, 0, 20)
-	prisonLabel.Position = UDim2.new(0, 10, 0, 10)
-	prisonLabel.BackgroundTransparency = 1
-	prisonLabel.Text = "Modo Prisão"
-	prisonLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-	prisonLabel.Font = Enum.Font.GothamBold
-	prisonLabel.TextSize = 16
-	prisonLabel.TextXAlignment = Enum.TextXAlignment.Left
-	prisonLabel.Parent = prisonPage
-
-	local inputBox = Instance.new("TextBox")
-	inputBox.Size = UDim2.new(0.9, 0, 0, 30)
-	inputBox.Position = UDim2.new(0.05, 0, 0, 50)
-	inputBox.PlaceholderText = "Escreva o NICKNAME para prender"
-	inputBox.ClearTextOnFocus = false
-	inputBox.Text = ""
-	inputBox.TextColor3 = Color3.fromRGB(0, 0, 0)
-	inputBox.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-	inputBox.Font = Enum.Font.Gotham
-	inputBox.TextSize = 14
-	inputBox.Parent = prisonPage
-
-	local btnPrenderUm = Instance.new("TextButton")
-	btnPrenderUm.Size = UDim2.new(0.9, 0, 0, 30)
-	btnPrenderUm.Position = UDim2.new(0.05, 0, 0, 90)
-	btnPrenderUm.Text = "Prender player selecionado"
-	btnPrenderUm.BackgroundColor3 = Color3.new(1, 0.65, 0)
-	btnPrenderUm.TextColor3 = Color3.fromRGB(255, 255, 255)
-	btnPrenderUm.Font = Enum.Font.GothamBold
-	btnPrenderUm.TextSize = 14
-	btnPrenderUm.Parent = prisonPage
-
-	local btnPrenderTodos = Instance.new("TextButton")
-	btnPrenderTodos.Size = UDim2.new(0.9, 0, 0, 30)
-	btnPrenderTodos.Position = UDim2.new(0.05, 0, 0, 130)
-	btnPrenderTodos.Text = "Prender all (Ultra troll ☠️)"
-	btnPrenderTodos.BackgroundColor3 = Color3.new(1, 0, 0)
-	btnPrenderTodos.TextColor3 = Color3.fromRGB(255, 255, 255)
-	btnPrenderTodos.Font = Enum.Font.GothamBold
-	btnPrenderTodos.TextSize = 14
-	btnPrenderTodos.Parent = prisonPage
-
-	local Prender1 = game:GetService("ReplicatedStorage"):FindFirstChild("Prisao")
-
-	local function prenderJogadorNome(nome)
-		if Prender1 then
-			local Prender = Prender1:FindFirstChild("Prender")
-			if Prender and Prender:IsA("RemoteEvent") then
-				local Players = game:GetService("Players")
-				local alvo = Players:FindFirstChild(nome)
-				if alvo then
-					Prender:FireServer(alvo)
-				else
-					warn("Jogador não encontrado: "..nome)
-				end
-			end
-		end
-	end
-
-	local function prenderTodos()
-		if Prender1 then
-			local Prender = Prender1:FindFirstChild("Prender")
-			if Prender and Prender:IsA("RemoteEvent") then
-				local Players = game:GetService("Players")
-				for _, p in pairs(Players:GetPlayers()) do
-					if p ~= player then
-						Prender:FireServer(p)
-						task.wait()
-					end
-				end
-			end
-		end
-	end
-
-	btnPrenderUm.MouseButton1Click:Connect(function()
-		local nomeAlvo = inputBox.Text
-		if nomeAlvo and nomeAlvo ~= "" then
-			prenderJogadorNome(nomeAlvo)
-		end
-	end)
-
-	btnPrenderTodos.MouseButton1Click:Connect(function()
-		prenderTodos()
-	end)
 
 	local function tamanhoSemelhante(a, b, margem)
 		margem = margem or 0.001
@@ -279,7 +347,7 @@ function MenuRPBR()
 	startButton.MouseButton1Click:Connect(function()
 		if not loopAtivo then
 			loopAtivo = true
-			statusLabel.Text = "🟢 Status: Iniciando "
+			statusLabel.Text = "🟢 Status: Iniciando"
 			task.spawn(iniciarColeta)
 		end
 	end)
@@ -288,11 +356,19 @@ function MenuRPBR()
 		loopAtivo = false
 		statusLabel.Text = "🟡 Status do script: Parando..."
 	end)
-
-	local minimizado = false
-	minimizeButton.MouseButton1Click:Connect(function()
-		minimizado = not minimizado
-		mainFrame.Visible = not minimizado
-	end)
 end
+
+
+
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+	if gameProcessed then return end
+	if input.KeyCode == Enum.KeyCode.T then
+		if menuGui and menuGui.Enabled then
+			menuGui.Enabled = false
+		else
+			MenuRPBR()
+		end
+	end
+end)
+
 MenuRPBR()
