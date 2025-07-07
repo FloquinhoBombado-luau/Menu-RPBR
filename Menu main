@@ -100,7 +100,7 @@ local function MenuRPBR()
 	local btnPrison = Instance.new("TextButton")
 	btnPrison.Size = UDim2.new(0.5, 0, 1, 0)
 	btnPrison.Position = UDim2.new(0.5, 0, 0, 0)
-	btnPrison.Text = "Troll (⚱️)"
+	btnPrison.Text = "Troll (⚰️)"
 	btnPrison.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 	btnPrison.TextColor3 = Color3.fromRGB(255, 255, 255)
 	btnPrison.Font = Enum.Font.GothamBold
@@ -127,7 +127,7 @@ local function MenuRPBR()
 	prisonLabel.Size = UDim2.new(1, -20, 0, 20)
 	prisonLabel.Position = UDim2.new(0, 10, 0, 10)
 	prisonLabel.BackgroundTransparency = 1
-	prisonLabel.Text = "Modo Prisão"
+	prisonLabel.Text = "☠️ Modo Troll ☠️"
 	prisonLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 	prisonLabel.Font = Enum.Font.GothamBold
 	prisonLabel.TextSize = 16
