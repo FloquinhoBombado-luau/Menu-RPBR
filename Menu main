@@ -8,6 +8,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local workspace = game:GetService("Workspace")
 
 local menuGui 
+local espAtivo = false
+local espFolder
 
 local function MenuRPBR()
 	if menuGui then
@@ -65,6 +67,9 @@ local function MenuRPBR()
 	closeButton.Parent = mainFrame
 	closeButton.MouseButton1Click:Connect(function()
 		menuGui.Enabled = false
+		if espFolder then
+			espFolder:ClearAllChildren()
+		end
 	end)
 
 	local navFrame = Instance.new("Frame")
@@ -87,8 +92,15 @@ local function MenuRPBR()
 	prisonPage.Visible = false
 	prisonPage.Parent = mainFrame
 
+	local espPage = Instance.new("Frame")
+	espPage.Size = UDim2.new(1, 0, 1, -60)
+	espPage.Position = UDim2.new(0, 0, 0, 60)
+	espPage.BackgroundTransparency = 1
+	espPage.Visible = false
+	espPage.Parent = mainFrame
+
 	local btnFarm = Instance.new("TextButton")
-	btnFarm.Size = UDim2.new(0.5, 0, 1, 0)
+	btnFarm.Size = UDim2.new(1/3, 0, 1, 0)
 	btnFarm.Position = UDim2.new(0, 0, 0, 0)
 	btnFarm.Text = "Auto farm"
 	btnFarm.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
@@ -98,8 +110,8 @@ local function MenuRPBR()
 	btnFarm.Parent = navFrame
 
 	local btnPrison = Instance.new("TextButton")
-	btnPrison.Size = UDim2.new(0.5, 0, 1, 0)
-	btnPrison.Position = UDim2.new(0.5, 0, 0, 0)
+	btnPrison.Size = UDim2.new(1/3, 0, 1, 0)
+	btnPrison.Position = UDim2.new(1/3, 0, 0, 0)
 	btnPrison.Text = "Troll (⚰️)"
 	btnPrison.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 	btnPrison.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -107,9 +119,20 @@ local function MenuRPBR()
 	btnPrison.TextSize = 14
 	btnPrison.Parent = navFrame
 
+	local btnESP = Instance.new("TextButton")
+	btnESP.Size = UDim2.new(1/3, 0, 1, 0)
+	btnESP.Position = UDim2.new(2/3, 0, 0, 0)
+	btnESP.Text = "ESP"
+	btnESP.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+	btnESP.TextColor3 = Color3.fromRGB(255, 255, 255)
+	btnESP.Font = Enum.Font.GothamBold
+	btnESP.TextSize = 14
+	btnESP.Parent = navFrame
+
 	btnFarm.MouseButton1Click:Connect(function()
 		farmPage.Visible = true
 		prisonPage.Visible = false
+		espPage.Visible = false
 		TweenService:Create(mainFrame, TweenInfo.new(0.25), {
 			Size = UDim2.new(0, 260, 0, 250)
 		}):Play()
@@ -118,10 +141,22 @@ local function MenuRPBR()
 	btnPrison.MouseButton1Click:Connect(function()
 		farmPage.Visible = false
 		prisonPage.Visible = true
+		espPage.Visible = false
 		TweenService:Create(mainFrame, TweenInfo.new(0.25), {
 			Size = UDim2.new(0, 260, 0, 400)
 		}):Play()
 	end)
+
+	btnESP.MouseButton1Click:Connect(function()
+		farmPage.Visible = false
+		prisonPage.Visible = false
+		espPage.Visible = true
+		TweenService:Create(mainFrame, TweenInfo.new(0.25), {
+			Size = UDim2.new(0, 260, 0, 150)
+		}):Play()
+	end)
+
+	
 
 	local prisonLabel = Instance.new("TextLabel")
 	prisonLabel.Size = UDim2.new(1, -20, 0, 20)
@@ -278,7 +313,9 @@ local function MenuRPBR()
 		})
 	end)
 
-local statusLabel = Instance.new("TextLabel")
+	
+
+	local statusLabel = Instance.new("TextLabel")
 	statusLabel.Size = UDim2.new(1, -20, 0, 20)
 	statusLabel.Position = UDim2.new(0, 10, 0, 10)
 	statusLabel.BackgroundTransparency = 1
@@ -378,19 +415,107 @@ local statusLabel = Instance.new("TextLabel")
 		loopAtivo = false
 		statusLabel.Text = "🟡 Status do script: Parando..."
 	end)
+
+
+
+	espFolder = Instance.new("Folder")
+	espFolder.Name = "ESPFolder"
+	espFolder.Parent = menuGui
+
+	local espToggleButton = Instance.new("TextButton")
+	espToggleButton.Size = UDim2.new(0.9, 0, 0, 35)
+	espToggleButton.Position = UDim2.new(0.05, 0, 0, 50)
+	espToggleButton.Text = "ESP Ativo"
+	espToggleButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+	espToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+	espToggleButton.Font = Enum.Font.GothamBold
+	espToggleButton.TextSize = 16
+	espToggleButton.Parent = espPage
+
+	espToggleButton.MouseButton1Click:Connect(function()
+		espAtivo = not espAtivo
+		if espAtivo then
+			espToggleButton.Text = "ESP Ativo"
+		else
+			espToggleButton.Text = "ESP Desativado"
+			espFolder:ClearAllChildren()
+		end
+	end)
+
+	local function criarESP(playerTarget)
+		local espGui = Instance.new("BillboardGui")
+		espGui.Name = "ESP"
+		espGui.Adornee = playerTarget.Character and playerTarget.Character:FindFirstChild("HumanoidRootPart")
+		espGui.Size = UDim2.new(4, 0, 4, 0)
+		espGui.StudsOffset = Vector3.new(0, 3, 0)
+		espGui.AlwaysOnTop = true
+		espGui.Parent = espFolder
+
+		local frame = Instance.new("Frame")
+		frame.Size = UDim2.new(1, 0, 1, 0)
+		frame.BackgroundTransparency = 0.6
+		frame.BorderSizePixel = 2
+		frame.BorderColor3 = playerTarget.TeamColor.Color
+		frame.BackgroundColor3 = playerTarget.TeamColor.Color
+		frame.Parent = espGui
+
+		local nameLabel = Instance.new("TextLabel")
+		nameLabel.Size = UDim2.new(1, 0, 0, 20)
+		nameLabel.Position = UDim2.new(0, 0, 1, 0)
+		nameLabel.BackgroundTransparency = 1
+		nameLabel.Text = playerTarget.Name
+		nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+		nameLabel.Font = Enum.Font.GothamBold
+		nameLabel.TextSize = 14
+		nameLabel.Parent = espGui
+
+		return espGui
+	end
+
+	RunService.RenderStepped:Connect(function()
+		if espAtivo then
+			espFolder:ClearAllChildren()
+			for _, p in pairs(Players:GetPlayers()) do
+				if p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+					criarESP(p)
+				end
+			end
+		end
+	end)
+
 end
-
-
-
-
 
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
 	if gameProcessed then return end
 	if input.KeyCode == Enum.KeyCode.T then
 		if menuGui and menuGui.Enabled then
 			menuGui.Enabled = false
+			if espFolder then
+				espFolder:ClearAllChildren()
+			end
 		else
 			MenuRPBR()
+		end
+	end
+end)
+
+RunService.RenderStepped:Connect(function()
+	if menuGui and menuGui.Enabled then
+		if espAtivo and menuGui:FindFirstChild("AutoFarmUI") then
+			local espPage = menuGui.AutoFarmUI:FindFirstChild("espPage")
+			local espToggleButton = menuGui.AutoFarmUI:FindFirstChild("espPage") and menuGui.AutoFarmUI.espPage:FindFirstChildOfClass("TextButton")
+			if espToggleButton then
+				local t = tick()
+				local r = (math.sin(t * 3) + 1) / 2
+				local g = (math.sin(t * 3 + 2) + 1) / 2
+				local b = (math.sin(t * 3 + 4) + 1) / 2
+				espToggleButton.BackgroundColor3 = Color3.new(r, g, b)
+			end
+		else
+			local espToggleButton = menuGui and menuGui:FindFirstChild("AutoFarmUI") and menuGui.AutoFarmUI:FindFirstChild("espPage") and menuGui.AutoFarmUI.espPage:FindFirstChildOfClass("TextButton")
+			if espToggleButton then
+				espToggleButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+			end
 		end
 	end
 end)
