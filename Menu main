@@ -17,7 +17,6 @@ local function MenuRPBR()
 
 	local character = player.Character or player.CharacterAdded:Wait()
 	local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
-
 	local postesFolder = workspace:WaitForChild("Postes")
 	local tempoEspera = 1
 	local tempoPressionar = 2
@@ -64,7 +63,6 @@ local function MenuRPBR()
 	closeButton.Font = Enum.Font.GothamBold
 	closeButton.TextSize = 14
 	closeButton.Parent = mainFrame
-
 	closeButton.MouseButton1Click:Connect(function()
 		menuGui.Enabled = false
 	end)
@@ -102,7 +100,7 @@ local function MenuRPBR()
 	local btnPrison = Instance.new("TextButton")
 	btnPrison.Size = UDim2.new(0.5, 0, 1, 0)
 	btnPrison.Position = UDim2.new(0.5, 0, 0, 0)
-	btnPrison.Text = "Troll (⚰️)"
+	btnPrison.Text = "Troll (⚱️)"
 	btnPrison.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 	btnPrison.TextColor3 = Color3.fromRGB(255, 255, 255)
 	btnPrison.Font = Enum.Font.GothamBold
@@ -124,8 +122,6 @@ local function MenuRPBR()
 			Size = UDim2.new(0, 260, 0, 400)
 		}):Play()
 	end)
-
-	
 
 	local prisonLabel = Instance.new("TextLabel")
 	prisonLabel.Size = UDim2.new(1, -20, 0, 20)
@@ -169,9 +165,8 @@ local function MenuRPBR()
 		local count = 0
 		for _, p in pairs(Players:GetPlayers()) do
 			if p.Name:lower():find(text) then
-				if count >= 5 then break end -- máximo 5 sugestões
+				if count >= 5 then break end
 				count = count + 1
-
 				local btn = Instance.new("TextButton")
 				btn.Size = UDim2.new(1, 0, 0, 20)
 				btn.Position = UDim2.new(0, 0, 0, 20 * (count - 1))
@@ -181,7 +176,6 @@ local function MenuRPBR()
 				btn.TextSize = 14
 				btn.Text = p.Name
 				btn.Parent = autocompleteFrame
-
 				btn.MouseButton1Click:Connect(function()
 					inputBox.Text = p.Name
 					autocompleteFrame.Visible = false
@@ -194,7 +188,7 @@ local function MenuRPBR()
 	inputBox:GetPropertyChangedSignal("Text"):Connect(updateAutocomplete)
 
 	local btnPrenderUm = Instance.new("TextButton")
-	btnPrenderUm.Size = UDim2.new(0.9, 0, 0, 30)
+	btnPrenderUm.Size = UDim2.new(0.9, 0, 0, 35)
 	btnPrenderUm.Position = UDim2.new(0.05, 0, 0, 190)
 	btnPrenderUm.Text = "Prender player selecionado"
 	btnPrenderUm.BackgroundColor3 = Color3.new(1, 0.65, 0)
@@ -204,7 +198,7 @@ local function MenuRPBR()
 	btnPrenderUm.Parent = prisonPage
 
 	local btnPrenderTodos = Instance.new("TextButton")
-	btnPrenderTodos.Size = UDim2.new(0.9, 0, 0, 30)
+	btnPrenderTodos.Size = UDim2.new(0.9, 0, 0, 35)
 	btnPrenderTodos.Position = UDim2.new(0.05, 0, 0, 230)
 	btnPrenderTodos.Text = "Prender all (Ultra troll ☠️)"
 	btnPrenderTodos.BackgroundColor3 = Color3.new(1, 0, 0)
@@ -221,9 +215,14 @@ local function MenuRPBR()
 			if Prender and Prender:IsA("RemoteEvent") then
 				local alvo = Players:FindFirstChild(nome)
 				if alvo then
+					local hrp = humanoidRootPart
+					local posOriginal = hrp.CFrame
+					local posTroll = CFrame.new(-1098.88147, 71.6924591, -1080.04871, 0.998856485, -0.0478087328, 0, 0.0478087328, 0.998856485, 0, 0, 0, 1)
+					hrp.CFrame = posTroll
+					task.wait(0.7)
 					Prender:FireServer(alvo)
-				else
-					warn("Jogador não encontrado: " .. nome)
+					task.wait(0.7)
+					hrp.CFrame = posOriginal
 				end
 			end
 		end
@@ -246,17 +245,40 @@ local function MenuRPBR()
 	btnPrenderUm.MouseButton1Click:Connect(function()
 		local nomeAlvo = inputBox.Text
 		if nomeAlvo and nomeAlvo ~= "" then
-			prenderJogadorNome(nomeAlvo)
+			local alvo = Players:FindFirstChild(nomeAlvo)
+			if alvo then
+				prenderJogadorNome(nomeAlvo)
+				game.StarterGui:SetCore("SendNotification", {
+					Title = "🪅",
+					Text = nomeAlvo .. " foi trollado",
+					Duration = 3
+				})
+			else
+				game.StarterGui:SetCore("SendNotification", {
+					Title = "🍃",
+					Text = "Jogador não encontrado.",
+					Duration = 3
+				})
+			end
+		else
+			game.StarterGui:SetCore("SendNotification", {
+				Title = "❌",
+				Text = "Digite um nome válido.",
+				Duration = 3
+			})
 		end
 	end)
 
 	btnPrenderTodos.MouseButton1Click:Connect(function()
 		prenderTodos()
+		game.StarterGui:SetCore("SendNotification", {
+			Title = "☠️",
+			Text = "Todos os jogadores foram presos",
+			Duration = 3
+		})
 	end)
 
-
-
-	local statusLabel = Instance.new("TextLabel")
+local statusLabel = Instance.new("TextLabel")
 	statusLabel.Size = UDim2.new(1, -20, 0, 20)
 	statusLabel.Position = UDim2.new(0, 10, 0, 10)
 	statusLabel.BackgroundTransparency = 1
@@ -357,6 +379,8 @@ local function MenuRPBR()
 		statusLabel.Text = "🟡 Status do script: Parando..."
 	end)
 end
+
+
 
 
 
